@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <com.example.myapplication.Self_layout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+<!--<include layout="@layout/title"/>-->
+<!--<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_gravity="center"
+    >-->
+<!--    <Button
+        android:id="@+id/end"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="6"
+        android:text="圣人请退出"></Button>
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text=" "
+        android:gravity="center"
+        android:textSize="50px"
+        android:layout_weight="3"
+        android:textColor="@color/black"
+        ></TextView>
+    <Button
+        android:id="@+id/login"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="6"
+        android:text="圣人请退出"></Button>
+</LinearLayout>-->
+
+
+<!--    <ImageView
+        android:id="@+id/ai1"
+        android:layout_width="match_parent"
+        android:layout_height="469dp"
+        android:layout_gravity="center"
+        android:src="@drawable/desktop"></ImageView>-->
+
+<!--    <EditText
+        android:id="@+id/txt1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="please input your password"
+        android:maxLines="1"
+        ></EditText>-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="00dp"
+        >
+<!--        <Button
+            android:id="@+id/tishi"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="密码提示"
+            ></Button>-->
+        <Button
+            android:id="@+id/start"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/background1"
+            ></Button>
+    </LinearLayout>
+<!--    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="18+"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:background="@drawable/title"
+        ></TextView>-->
+<!--    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/title"/>-->
+</LinearLayout>
