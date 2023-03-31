@@ -6,6 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,12 +18,14 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+
 public class MainActivity2 extends BasicActivity implements View.OnClickListener {
     private final String TAG = "MainActivity2";
-    private static int imgcount = 10;
+    private int imgcount = 12;
     private static int cnt = 0;
     private static boolean finish = false;
-    private int[] imgid = {R.drawable.rdr1,R.drawable.rdr2,R.drawable.rdr3,R.drawable.rdr4,R.drawable.rdr5,R.drawable.rdr6,R.drawable.rdr7,R.drawable.rdr8,R.drawable.rdr9,R.drawable.rdr10};
+    private int[] imgid = {R.drawable.rdr1,R.drawable.rdr2,R.drawable.rdr3,R.drawable.rdr4,R.drawable.rdr5,R.drawable.rdr6,R.drawable.rdr7,R.drawable.rdr8,R.drawable.rdr9,R.drawable.rdr10,R.drawable.pic2,R.drawable.pic1};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +79,12 @@ public class MainActivity2 extends BasicActivity implements View.OnClickListener
         Intent it2 = new Intent();
         it2.putExtra("two2one","好不容易进去，回来干什么!");
         setResult(RESULT_OK,it2);
+        if(Self_layout.api_changed)
+        {
+            SaveString(Self_layout.apikey);
+            Self_layout.api_changed =false;
+            System.out.println(Self_layout.apikey);
+        }
         finish();
     }
 
@@ -84,4 +95,53 @@ public class MainActivity2 extends BasicActivity implements View.OnClickListener
         intent.putExtra("para2",data2);
         intentActivityResultLauncher.launch(intent);
     }
+
+    /**
+     * 将图片转换成十六进制字符串
+     * @param photo
+     * @return
+     *//*
+    public static String sendPhoto(ImageView photo) {
+        Drawable d = photo.getDrawable();
+        Bitmap bitmap=((BitmapDrawable)d).getBitmap();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+        int options = 95;
+        //如果压缩后的大小超出所要求的，继续压缩
+        while (stream.toByteArray().length / 1024 > 50){
+            stream.reset();
+            bitmap.compress(Bitmap.CompressFormat.JPEG,options,stream);
+            //每次减少5%质量
+            if (options>5){//避免出现options<=0
+                options -=5;
+            } else {
+                break;
+            }
+        }
+        System.out.println("压缩了"+options);
+        byte[] bt = stream.toByteArray();
+        String photoStr = byte2hex(bt);
+        return photoStr;
+    }
+
+
+    *//**
+     * 二进制转字符串
+     * @param b
+     * @return
+     *//*
+    public static String byte2hex(byte[] b)
+    {
+        StringBuilder sb = new StringBuilder();
+        String stmp = "";
+        for (int n = 0; n < b.length; n++) {
+            stmp = Integer.toHexString(b[n] & 0XFF);
+            if (stmp.length() == 1) {
+                sb.append("0" + stmp);
+            } else {
+                sb.append(stmp);
+            }
+        }
+        return sb.toString();
+    }*/
 }

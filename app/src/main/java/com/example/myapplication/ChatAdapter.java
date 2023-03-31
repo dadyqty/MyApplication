@@ -2,6 +2,15 @@ package com.example.myapplication;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -13,8 +22,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
@@ -22,13 +39,18 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private List<Message> messages;
     private String sex;
     private int chara_photo;
+    public String name;
+    public Context context;
+    public Resources resources;
     View.OnLongClickListener onLongClickListener;
 
-    public ChatAdapter(List<Message> messages, String sex, int chara_photo,View.OnLongClickListener longClickListener) {
+    public ChatAdapter(List<Message> messages, String sex, String name,int chara_photo,View.OnLongClickListener longClickListener,Resources resources) {
         this.messages = messages;
         this.sex = sex;
         this.onLongClickListener = longClickListener;
         this.chara_photo = chara_photo;
+        this.name = name;
+        this.resources = resources;
     }
 
 /*    @Override
@@ -49,6 +71,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Message message = messages.get(position);
@@ -68,6 +91,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
             holder.messageTextView.setBackgroundResource(R.drawable.send);
         }
         else {
+
             holder.send_layout.setGravity(Gravity.LEFT);
             holder.huaji.setVisibility(View.INVISIBLE);
 /*            DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
@@ -81,7 +105,17 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
                 holder.messageTextView.setBackgroundResource(R.drawable.woman);
             }
         }
-        holder.messageTextView.setText(message.getText());
+            if(name.equals("何西阿·马修斯")&&message.getText().contains("http")) {
+                String st = message.getText();
+                Bitmap bitmap = null;
+                BitMapUtil bitMapUtil = new BitMapUtil();
+                bitmap = bitMapUtil.returnBitMap(st);
+                Drawable drawable = new BitmapDrawable(resources,bitmap);
+                holder.messageTextView.setCompoundDrawables(drawable,drawable,drawable,drawable);
+
+            }
+            else
+                holder.messageTextView.setText(message.getText());
     }
 
     @Override
@@ -105,4 +139,32 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
             messageTextView.setOnLongClickListener(onLongClickListener);
         }
     }
-}
+
+    public static Bitmap getImage(String Url) throws Exception {
+
+        try {
+
+            URL url = new URL(Url);
+
+            String responseCode = url.openConnection().getHeaderField(0);
+
+            if (responseCode.indexOf("200") < 0)
+
+                throw new Exception("图片文件不存在或路径错误，错误代码：" + responseCode);
+
+            return BitmapFactory.decodeStream(url.openStream());
+
+        } catch (IOException e) {
+
+            // TODO Auto-generated catch block
+
+            throw new Exception(e.getMessage());
+
+        }
+
+    }
+
+
+
+
+    }

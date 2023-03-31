@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">ChatRDR2</string>
-    <string name="apiKey"></string>
+    <string name="apiKey">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</string>
     <string name="Typing">正在为您解答......</string>
 </resources>

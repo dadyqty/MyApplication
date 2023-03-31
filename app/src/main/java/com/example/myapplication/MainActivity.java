@@ -26,23 +26,23 @@ import android.widget.Toast;
 public class MainActivity extends BasicActivity {
 
     private final String TAG = "MainActivity";
-    private static int ran2=14692;
+/*    private static int ran2=14692;*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
-        ActionBar actionBar = getSupportActionBar();
+/*        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
         {
             actionBar.hide();
-        }
+        }*/
 /*        EditText txt1 = (EditText) findViewById(R.id.txt1);*/
         ActivityResultLauncher<Intent> intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
                 if(result.getResultCode() == RESULT_OK && result.getData() != null)
                 {
-                    ran2 = 14692;
+                    /*ran2 = 14692;*/
                     Toast.makeText(MainActivity.this,result.getData().getStringExtra("two2one"),Toast.LENGTH_SHORT).show();
                 }
             }
@@ -126,25 +126,4 @@ public class MainActivity extends BasicActivity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main,menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId())
-        {
-            case R.id.addit:
-                    Toast.makeText(this,"此功能暂未开放",Toast.LENGTH_SHORT).show();
-                    break;
-            case R.id.removeit:
-                Toast.makeText(this,"此功能暂未开放！",Toast.LENGTH_SHORT).show();
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
 }

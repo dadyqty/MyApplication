@@ -64,6 +64,7 @@ public class chara_adapter extends RecyclerView.Adapter<chara_adapter.View_holde
                 it2.putExtra("name",insidelist.get(position).getName());
                 it2.putExtra("sex",insidelist.get(position).getSex());
                 it2.putExtra("chara_photo",insidelist.get(position).getImage_id());
+                it2.putExtra("Personality",insidelist.get(position).getPersonality());
                 view.getContext().startActivity(it2);
             }
         });
@@ -76,7 +77,7 @@ public class chara_adapter extends RecyclerView.Adapter<chara_adapter.View_holde
         holder.charaTemp.chara_img.setImageResource(chara.getImage_id());
         holder.charaTemp.char_name.setText("姓名："+chara.getName());
         holder.charaTemp.char_sex.setText("性别："+chara.getSex());
-        holder.charaTemp.char_personality.setText("品质："+chara.getPersonality());
+        holder.charaTemp.char_personality.setText("特性："+chara.getPersonality());
         /*holder.charaTemp.char_introduction.setText("简介：\n"+chara.getIntroduction());*/
     }
 

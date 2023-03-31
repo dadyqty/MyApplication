@@ -1,6 +1,8 @@
 package com.example.myapplication;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 
 /**
  * 获取文件夹下所有的文件 不是图片的文件也会被读取的， 如果你是专门用来存放图片的文件，这种方法可行 否则的话就要判断文件的类型了

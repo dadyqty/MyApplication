@@ -14,6 +14,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +26,17 @@ public class MainActivity3 extends BasicActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.third_layout);
-        ActionBar actionBar = getSupportActionBar();
+        if(Self_layout.api_changed)
+        {
+            SaveString(Self_layout.apikey);
+            Self_layout.api_changed =false;
+            System.out.println(Self_layout.apikey);
+        }
+/*        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
         {
             actionBar.hide();
-        }
+        }*/
         init_chara();
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.list_item);
        // StaggeredGridLayoutManager linearLayoutManager = new  StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.HORIZONTAL);
@@ -43,20 +51,31 @@ public class MainActivity3 extends BasicActivity {
 
     }
 
-/*    @Override
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if(Self_layout.api_changed)
+        {
+            SaveString(Self_layout.apikey);
+            Self_layout.api_changed =false;
+            System.out.println(Self_layout.apikey);
+        }
+    }
+
+    /*    @Override
     public void onClick(View view) {
         Activity_contorller.end_the_application();
     }*/
 
     private void init_chara()
     {
-        chara athor = new chara("亚瑟·摩根","男","好",chara.information[0], R.drawable.athor);
+        chara athor = new chara("亚瑟·摩根","男","基于gpt-3.5-turbo模型",chara.information[0], R.drawable.athor);
         chara_list.add(athor);
-        chara john = new chara("约翰·马斯顿","男","好",chara.information[2],R.drawable.john);
+        chara john = new chara("约翰·马斯顿","男","基于text-davinci-003模型",chara.information[2],R.drawable.john);
         chara_list.add(john);
-        chara dc = new chara("达奇·范德林德","男","坏",chara.information[3],R.drawable.dc);
+        chara dc = new chara("达奇·范德林德","男","基于text-davinci-edit-001模型",chara.information[3],R.drawable.dc);
         chara_list.add(dc);
-        chara he = new chara("何西阿·马修斯","男","好",chara.information[4],R.drawable.he);
+        chara he = new chara("何西阿·马修斯","男","Creates image",chara.information[4],R.drawable.he);
         chara_list.add(he);
         chara mk = new chara("迈卡·贝尔","男","坏",chara.information[5],R.drawable.mk);
         chara_list.add(mk);

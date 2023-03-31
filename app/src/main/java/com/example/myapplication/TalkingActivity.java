@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -9,12 +10,14 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.content.res.AssetManager;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -51,6 +54,7 @@ public class TalkingActivity extends BasicActivity {
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
     private String apiKey;
+    private AlertDialog.Builder dialog;
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)       //设置连接超时
             .readTimeout(60, TimeUnit.SECONDS)          //设置读超时
@@ -68,16 +72,60 @@ public class TalkingActivity extends BasicActivity {
     private RecyclerView recyclerView;
     private ChatAdapter adapter;
     private String name;
+    private String Personality;
+    JsonAdapter jsonAdapter;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talking);
+        if(Self_layout.api_changed)
+        {
+            SaveString(Self_layout.apikey);
+            Self_layout.api_changed =false;
+            System.out.println(Self_layout.apikey);
+        }
+        apiKey = Load_String();
+        if(apiKey.length()==0)
+        {
+            dialog = new AlertDialog.Builder(TalkingActivity.this);
+            dialog.setIcon(R.drawable.option);
+            dialog.setTitle("请设置您的apikey");
+            View view1 = LayoutInflater.from(TalkingActivity.this).inflate(R.layout.option, null);
+            dialog.setView(view1);
+            EditText editText = (EditText)view1.findViewById(R.id.apikey);
+            dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    apiKey =  editText.getText().toString();
+                    if(apiKey.length()==0)
+                    {
+                        Toast.makeText(TalkingActivity.this,"apikey不能为空",Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                    else
+                    {
+                        SaveString(apiKey);
+                        Self_layout.api_changed =false;
+                    }
+                }
+            });
+            dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Self_layout.api_changed = false;
+                    Toast.makeText(TalkingActivity.this,"必须设置apikey才能聊天",Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            });
+            dialog.show();
+        }
         Intent intent = getIntent();
         name = intent.getStringExtra("name");
         String sex = intent.getStringExtra("sex");
         int chara_photo = intent.getIntExtra("chara_photo",R.drawable.athor);
+        Personality = intent.getStringExtra("Personality");
         TextView textView = (TextView)findViewById(R.id.chat_name);
         EditText send_message = (EditText) findViewById(R.id.send_message);
         ImageView imageView = (ImageView) findViewById(R.id.background2);
@@ -90,7 +138,6 @@ public class TalkingActivity extends BasicActivity {
         textView.setText("与"+name+"交谈");
         init_messages(name);
         //setup session
-        apiKey = getString(R.string.apiKey);
         String character_desc = "你是"+name+",一个由RockStar Games创建的虚拟人物，来自荒野大镖客2, 你旨在回答并解决人们的任何问题，并且可以使用多种语言与人交流。";
         int conversation_max_tokens = Integer.parseInt("1000");
         mySession = new Session(tokenizerFromPretrained(), conversation_max_tokens, character_desc);
@@ -98,7 +145,9 @@ public class TalkingActivity extends BasicActivity {
         recyclerView = findViewById(R.id.chat_recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
-        adapter = new ChatAdapter(messages,sex,chara_photo, lc);
+        adapter = new ChatAdapter(messages,sex,name,chara_photo, lc,this.getResources());
+        adapter.name = name;
+        adapter.context = this;
         recyclerView.setAdapter(adapter);
 
         Button send_button = (Button) findViewById(R.id.send_button);
@@ -139,7 +188,7 @@ public class TalkingActivity extends BasicActivity {
 
     private void init_messages(String name)
     {
-        messages.add(new Message("你好，我是无所不知的"+name+"\n 请提出你的问题或想法", false));
+        messages.add(new Message("你好，我是无所不知的"+name+"\n我是"+Personality+"开发"+"\n 请提出你的问题或想法", false));
     }
 
 
@@ -183,25 +232,28 @@ public class TalkingActivity extends BasicActivity {
         //okhttp
         messages.add(new Message("请稍后!"+name+getString(R.string.Typing), false));
         JSONArray newQuestion = mySession.buildSessionQuery(question);
-
         JSONObject jsonBody = new JSONObject();
+        jsonAdapter = new JsonAdapter(jsonBody,name,newQuestion);
+        jsonAdapter.question = question;
         try {
+            jsonAdapter.name_to_json();
             //String newQuery = newQuestion.toString();
-            jsonBody.put("model", "gpt-3.5-turbo");//text-davinci-003
-            jsonBody.put("messages", newQuestion);
+            /*jsonBody.put("model", "text-davinci-003");//text-davinci-003 gpt-3.5-turbo
+            jsonBody.put("prompt", question);
+            //jsonBody.put("messages", newQuestion);
             jsonBody.put("max_tokens", 1200);// 回复最大的字符数
             jsonBody.put("temperature", 0.9);//值在[0,1]之间，越大表示回复越具有不确定性
             jsonBody.put("top_p", 1);
             jsonBody.put("frequency_penalty", 0.0);
-            jsonBody.put("presence_penalty", 0.0);
+            jsonBody.put("presence_penalty", 0.0);*/
             //           jsonBody.put("stop", "\n\n\n");
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
+        RequestBody body = RequestBody.create(jsonAdapter.jsonBody.toString(), JSON);
         Request request = new Request.Builder()
-                .url("https://api.openai.com/v1/chat/completions")
+                .url(jsonAdapter.url)///chat
                 .header("Authorization", "Bearer " + apiKey)
                 .post(body)
                 .build();
@@ -209,8 +261,8 @@ public class TalkingActivity extends BasicActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                messages.add(new Message(e.getMessage(),false));
-               // addResponse(getString(R.string.failed_load_response) + e.getMessage());
+                //messages.add(new Message(e.getMessage(),false));
+                addResponse("返回失败"+e.getMessage());
 //                mySession.clearSession();
             }
 
@@ -220,21 +272,28 @@ public class TalkingActivity extends BasicActivity {
                 if (response.isSuccessful()) {
                     try {
                         JSONObject jsonObject = new JSONObject(response.body().string());
-                        JSONArray jsonArray = jsonObject.getJSONArray("choices");
-//                        Log.i(TAG, jsonArray.toString());
-                        JSONObject jsonTokens = jsonObject.getJSONObject("usage");
-                        int total_tokens = jsonTokens.getInt("total_tokens");
-                        int completion_tokens = jsonTokens.getInt("completion_tokens");
-                        if (completion_tokens > 0) {
-                            String result = jsonArray.getJSONObject(0).getJSONObject("message").getString("content");//text
+                        if(!name.equals("何西阿·马修斯")){
+                            jsonAdapter.return_array = jsonObject.getJSONArray("choices");
+                            JSONObject jsonTokens = jsonObject.getJSONObject("usage");
+                            int total_tokens = jsonTokens.getInt("total_tokens");
+                            int completion_tokens = jsonTokens.getInt("completion_tokens");
+                            if (completion_tokens > 0) {
+                                String result = jsonAdapter.get_result();//text
+                                //String result = jsonArray.getJSONObject(0).getString("text").trim();//text
+                                addResponse(result);
+                                mySession.saveSession(total_tokens, result);
+                            }
+                        }
+                        else{
+                            jsonAdapter.return_array = jsonObject.getJSONArray("data");
+                            String result = jsonAdapter.get_result();//text
                             addResponse(result);
-                            mySession.saveSession(total_tokens, result);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 } else {
-                    messages.add(new Message("返回内容失败，原因是"+ response.body(),false));
+                    addResponse("返回内容失败，原因是"+ response.body());
                     //addResponse(getString(R.string.failed_load_response) + response.body().toString());
 //                    mySession.clearSession();
                 }

@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-    <com.example.myapplication.Self_layout
+<!--    <com.example.myapplication.Self_layout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"/>-->
 <!--<include layout="@layout/title"/>-->
 <!--<LinearLayout
     android:layout_width="match_parent"
