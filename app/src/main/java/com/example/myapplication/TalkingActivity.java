@@ -14,9 +14,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -73,6 +77,9 @@ public class TalkingActivity extends BasicActivity {
     private ChatAdapter adapter;
     private String name;
     private String Personality;
+    public Bitmap bitmap = null;
+    private MyHandle myHandle = null;
+    private String question;
     JsonAdapter jsonAdapter;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -129,6 +136,7 @@ public class TalkingActivity extends BasicActivity {
         TextView textView = (TextView)findViewById(R.id.chat_name);
         EditText send_message = (EditText) findViewById(R.id.send_message);
         ImageView imageView = (ImageView) findViewById(R.id.background2);
+        myHandle = new MyHandle();
 
         Rect outRect = new Rect();
         getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect);
@@ -147,15 +155,14 @@ public class TalkingActivity extends BasicActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         adapter = new ChatAdapter(messages,sex,name,chara_photo, lc,this.getResources());
         adapter.name = name;
-        adapter.context = this;
         recyclerView.setAdapter(adapter);
 
         Button send_button = (Button) findViewById(R.id.send_button);
         send_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String question = send_message.getText().toString().trim();
-                messages.add(new Message(question,true));
+                question = send_message.getText().toString().trim();
+                messages.add(new Message(question,true,false));
                 try {
                     callAPI(question);
                 } catch (JSONException e) {
@@ -188,7 +195,7 @@ public class TalkingActivity extends BasicActivity {
 
     private void init_messages(String name)
     {
-        messages.add(new Message("你好，我是无所不知的"+name+"\n我是"+Personality+"开发"+"\n 请提出你的问题或想法", false));
+        messages.add(new Message("你好，我是无所不知的"+name+"\n我是"+Personality+"开发"+"\n 请提出你的问题或想法", false,false));
     }
 
 
@@ -211,7 +218,19 @@ public class TalkingActivity extends BasicActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                messages.add(new Message(message, sentByme));
+                messages.add(new Message(message, sentByme,false));
+                adapter.notifyDataSetChanged();
+                recyclerView.scrollToPosition(messages.size()-1);
+            }
+        });
+    }
+
+    void addimgToChat(Drawable drawable, Boolean sentByme) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.drawable = drawable;
+                messages.add(new Message(question, sentByme,true));
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messages.size()-1);
             }
@@ -226,11 +245,11 @@ public class TalkingActivity extends BasicActivity {
     void callAPI(String question) throws JSONException {
         if (question.compareToIgnoreCase("#清除记忆") == 0) {
             mySession.clearSession();
-            messages.add(new Message("清除完毕",false));
+            messages.add(new Message("清除完毕",false,false));
             return;
         }
         //okhttp
-        messages.add(new Message("请稍后!"+name+getString(R.string.Typing), false));
+        messages.add(new Message("请稍后!"+name+getString(R.string.Typing), false,false));
         JSONArray newQuestion = mySession.buildSessionQuery(question);
         JSONObject jsonBody = new JSONObject();
         jsonAdapter = new JsonAdapter(jsonBody,name,newQuestion);
@@ -283,11 +302,33 @@ public class TalkingActivity extends BasicActivity {
                                 addResponse(result);
                                 mySession.saveSession(total_tokens, result);
                             }
+
                         }
                         else{
                             jsonAdapter.return_array = jsonObject.getJSONArray("data");
                             String result = jsonAdapter.get_result();//text
                             addResponse(result);
+                            new Thread(){
+                                @Override
+                                public void run() {
+                                    try {
+                                        String st = result;
+                                        bitmap = adapter.getBitmap(st);
+                                        if(bitmap!=null) {
+                                            android.os.Message msg = new android.os.Message();
+                                            msg.what = 1;
+                                            myHandle.sendMessage(msg);
+                                        }
+                                        else{
+                                            android.os.Message msg = new android.os.Message();
+                                            msg.what = 2;
+                                            myHandle.sendMessage(msg);
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }.start();
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -301,5 +342,19 @@ public class TalkingActivity extends BasicActivity {
         });
 
 
+    }
+    private class MyHandle extends Handler {
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            switch (msg.what){
+                case 1:
+                    Drawable drawable = new BitmapDrawable(getResources(),bitmap);
+                    messages.remove(messages.size() - 1);
+                    addimgToChat(drawable, false);
+                    break;
+                case 2:
+                    adapter.textView_temp.setText("图片返回失败！");
+            }
+        }
     }
 }
