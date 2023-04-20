@@ -51,7 +51,9 @@ public class MainActivity extends BasicActivity {
         bt0.setOnClickListener(new View.OnClickListener() {
                                    @Override
                                    public void onClick(View view) {
-                                       MainActivity2.start_2_activity(MainActivity.this, intentActivityResultLauncher, "hello!", "here is one!");
+                                       Intent intent1 = new Intent(MainActivity.this,MainActivity3.class);
+                                       startActivity(intent1);
+                                       //MainActivity2.start_2_activity(MainActivity.this, intentActivityResultLauncher, "hello!", "here is one!");
                                        /*AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
                                        dialog.setTitle("开始");
                                        dialog.setMessage("你确定要继续吗？");

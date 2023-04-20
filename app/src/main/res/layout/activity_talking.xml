@@ -24,6 +24,13 @@
                 android:src="@drawable/background2"/>
         </LinearLayout>
     </ScrollView>
+    <Button
+        android:id="@+id/save_button"
+        android:layout_alignParentRight = "true"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/latest"
+        />
     <TextView
         android:id="@+id/chat_name"
         android:layout_width="match_parent"
@@ -64,5 +71,6 @@
         android:layout_height="wrap_content"
         android:text="Send"
         />
+
     </LinearLayout>
 </RelativeLayout>

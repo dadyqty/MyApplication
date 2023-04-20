@@ -17,12 +17,21 @@
         android:layout_width="150px"
         android:layout_height="150px"
 />
-<TextView
-    android:id="@+id/message_text_view"
-    android:textAlignment="gravity"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/message_text_view"
+            android:textAlignment="gravity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <ImageView
+            android:id="@+id/url_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/huaji"
         android:layout_width="150px"

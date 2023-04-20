@@ -18,6 +18,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,14 +45,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     private int chara_photo;
     public String name;
     public static Resources resources;
-    View.OnLongClickListener onLongClickListener;
-    public Drawable drawable;
-    public TextView textView_temp ;
+    public static Drawable drawable;
+    public Button button_send ;
 
-    public ChatAdapter(List<Message> messages, String sex, String name,int chara_photo,View.OnLongClickListener longClickListener,Resources resources) {
+    public ChatAdapter(List<Message> messages, String sex, String name,int chara_photo,Resources resources) {
         this.messages = messages;
         this.sex = sex;
-        this.onLongClickListener = longClickListener;
         this.chara_photo = chara_photo;
         this.name = name;
         this.resources = resources;
@@ -79,30 +78,16 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Message message = messages.get(position);
-        textView_temp = holder.messageTextView;
         holder.messageTextView.setGravity(Gravity.LEFT);
         holder.chara_photo.setImageResource(chara_photo);
         if (message.isSentByMe() == true) {
             holder.send_layout.setGravity(Gravity.RIGHT);
             holder.chara_photo.setVisibility(View.INVISIBLE);
-            /*LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) holder.messageTextView.getLayoutParams();
-            lp.gravity = Gravity.RIGHT;  //这才是布局文件中的Android:layout_gravity属性
-            holder.messageTextView.setLayoutParams(lp);*/
-/*            DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-            int width = displayMetrics.widthPixels;
-            ViewGroup.LayoutParams params = holder.messageTextView.getLayoutParams();
-            params.width = width/3;
-            params.height = (int)(200f/600 *params.width);*/
             holder.messageTextView.setBackgroundResource(R.drawable.send);
         }
         else {
-
             holder.send_layout.setGravity(Gravity.LEFT);
             holder.huaji.setVisibility(View.INVISIBLE);
-/*            DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-            int width = displayMetrics.widthPixels;
-            ViewGroup.LayoutParams params = holder.messageTextView.getLayoutParams();
-            params.width = width/3;*/
             if(sex.equals("男")) {
                 holder.messageTextView.setBackgroundResource(R.drawable.man);
             }
@@ -110,15 +95,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
                 holder.messageTextView.setBackgroundResource(R.drawable.woman);
             }
         }
-/*            if(name.equals("何西阿·马修斯")&&message.getText().contains("http")) {
-
-            }
-            else*/
-                holder.messageTextView.setText(message.getText());
                 if(message.getimgflg() == true)
                 {
-                    holder.messageTextView.setCompoundDrawables(drawable,drawable,drawable,drawable);
+                    holder.url_img.setBackgroundResource(R.drawable.man);
+                    holder.url_img.setImageDrawable(message.getDrawable());
                 }
+                    holder.messageTextView.setText(message.getText());
     }
 
     @Override
@@ -132,14 +114,15 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         public LinearLayout send_layout;
         public ImageView huaji;
         public ImageView chara_photo;
+        public ImageView url_img;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             messageTextView = itemView.findViewById(R.id.message_text_view);
             send_layout = itemView.findViewById(R.id.send_layout);
             huaji = itemView.findViewById(R.id.huaji);
+            url_img = itemView.findViewById(R.id.url_img);
             chara_photo = itemView.findViewById(R.id.char_photo);
-            messageTextView.setOnLongClickListener(onLongClickListener);
         }
     }
 
@@ -181,6 +164,4 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         // 关闭流一定要记得。
         return outstream.toByteArray();
     }
-
-
     }

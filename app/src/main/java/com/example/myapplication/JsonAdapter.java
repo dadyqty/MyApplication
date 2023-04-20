@@ -55,7 +55,21 @@ public class JsonAdapter {
                 jsonBody.put("size", "1024x1024");
                 url = "https://api.openai.com/v1/images/generations";
                 break;
-            default:break;
+            case("迈卡·贝尔"):
+                jsonBody.put("file", question);
+                jsonBody.put("model", "whisper-1");
+                url = "https://api.openai.com/v1/audio/translations";
+                break;
+            default:
+                jsonBody.put("model", "gpt-3.5-turbo");//text-davinci-003 gpt-3.5-turbo
+                jsonBody.put("messages", newQuestion);
+                jsonBody.put("max_tokens", 1200);// 回复最大的字符数
+                jsonBody.put("temperature", 1);//值在[0,1]之间，越大表示回复越具有不确定性
+                jsonBody.put("top_p", 1);
+                jsonBody.put("frequency_penalty", 0.0);
+                jsonBody.put("presence_penalty", 0.0);
+                url = "https://api.openai.com/v1/chat/completions";
+                break;
         }
 
     }
@@ -65,13 +79,13 @@ public class JsonAdapter {
             case ("亚瑟·摩根"):
                 return return_array.getJSONObject(0).getJSONObject("message").getString("content");
             case ("约翰·马斯顿"):
-                return return_array.getJSONObject(0).getString("text").trim();
             case ("达奇·范德林德"):
+            case("迈卡·贝尔"):
                 return return_array.getJSONObject(0).getString("text").trim();
             case ("何西阿·马修斯"):
                 return return_array.getJSONObject(0).getString("url").trim();
             default:
-                return "空";
+                return return_array.getJSONObject(0).getJSONObject("message").getString("content");
         }
 
     }

@@ -1,11 +1,15 @@
 package com.example.myapplication;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -13,13 +17,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -48,13 +56,19 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 public class TalkingActivity extends BasicActivity {
+    private MsgRevDao msgRevDao;
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
     private String apiKey;
@@ -76,17 +90,26 @@ public class TalkingActivity extends BasicActivity {
     private RecyclerView recyclerView;
     private ChatAdapter adapter;
     private String name;
+    private String sex;
+    private int chara_photo;
     private String Personality;
     public Bitmap bitmap = null;
     private MyHandle myHandle = null;
     private String question;
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private static String fileName = null;
+    private MediaRecorder recorder = null;
+    private Button saveButton = null;
+    private boolean isRecording = false;
     JsonAdapter jsonAdapter;
+
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talking);
+        write_permission();
         if(Self_layout.api_changed)
         {
             SaveString(Self_layout.apikey);
@@ -130,18 +153,20 @@ public class TalkingActivity extends BasicActivity {
         }
         Intent intent = getIntent();
         name = intent.getStringExtra("name");
-        String sex = intent.getStringExtra("sex");
-        int chara_photo = intent.getIntExtra("chara_photo",R.drawable.athor);
+        sex = intent.getStringExtra("sex");
+        chara_photo = intent.getIntExtra("chara_photo",R.drawable.athor);
         Personality = intent.getStringExtra("Personality");
         TextView textView = (TextView)findViewById(R.id.chat_name);
         EditText send_message = (EditText) findViewById(R.id.send_message);
         ImageView imageView = (ImageView) findViewById(R.id.background2);
+        saveButton = findViewById(R.id.save_button);
         myHandle = new MyHandle();
-
+        msgRevDao = new MsgRevDao(TalkingActivity.this);
         Rect outRect = new Rect();
         getWindow().getDecorView().getWindowVisibleDisplayFrame(outRect);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) imageView.getLayoutParams();
         params.height = outRect.bottom - outRect.top;
+
 
         textView.setText("与"+name+"交谈");
         init_messages(name);
@@ -153,8 +178,51 @@ public class TalkingActivity extends BasicActivity {
         recyclerView = findViewById(R.id.chat_recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
-        adapter = new ChatAdapter(messages,sex,name,chara_photo, lc,this.getResources());
-        adapter.name = name;
+        adapter = new ChatAdapter(messages,sex,name,chara_photo,this.getResources());
+        adapter.button_send = findViewById(R.id.send_button);
+        fileName = "data/data/com.example.myapplication/";
+        fileName += "recorded_audio.mp3";
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQUEST_RECORD_AUDIO_PERMISSION);
+        } else {
+            setupMediaRecorder();
+        }
+        if(name.equals("迈卡·贝尔"))
+        {
+            adapter.button_send.setText("按住说话");
+        adapter.button_send.setOnTouchListener(new View.OnTouchListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startRecording();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        stopRecording();
+                        messages.add(new Message(fileName,true,false));
+                        recyclerView.scrollToPosition(messages.size()-1);
+                        byte[] fileBytes = new byte[0];
+                        try {
+                            fileBytes = Files.readAllBytes(Paths.get(fileName));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        String fileContent = new String(fileBytes);
+                        System.out.println(fileContent);
+                        try {
+                            callAPI(fileContent);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                }
+                return false;
+            }
+        });}
         recyclerView.setAdapter(adapter);
 
         Button send_button = (Button) findViewById(R.id.send_button);
@@ -175,6 +243,18 @@ public class TalkingActivity extends BasicActivity {
                 //adapter.notifyItemInserted(messages.size()-1);
             }
         });
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent1 = new Intent(TalkingActivity.this,SaveChatActivity.class);
+                intent1.putExtra("name",name);
+                intent1.putExtra("sex",sex);
+                intent1.putExtra("chara_photo",chara_photo);
+                startActivity(intent1);
+            }
+        });
+
         recyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -229,8 +309,9 @@ public class TalkingActivity extends BasicActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                adapter.drawable = drawable;
-                messages.add(new Message(question, sentByme,true));
+                Message message = new Message(question, sentByme,true);
+                message.setDrawable(drawable);
+                messages.add(message);
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messages.size()-1);
             }
@@ -256,17 +337,6 @@ public class TalkingActivity extends BasicActivity {
         jsonAdapter.question = question;
         try {
             jsonAdapter.name_to_json();
-            //String newQuery = newQuestion.toString();
-            /*jsonBody.put("model", "text-davinci-003");//text-davinci-003 gpt-3.5-turbo
-            jsonBody.put("prompt", question);
-            //jsonBody.put("messages", newQuestion);
-            jsonBody.put("max_tokens", 1200);// 回复最大的字符数
-            jsonBody.put("temperature", 0.9);//值在[0,1]之间，越大表示回复越具有不确定性
-            jsonBody.put("top_p", 1);
-            jsonBody.put("frequency_penalty", 0.0);
-            jsonBody.put("presence_penalty", 0.0);*/
-            //           jsonBody.put("stop", "\n\n\n");
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -291,7 +361,7 @@ public class TalkingActivity extends BasicActivity {
                 if (response.isSuccessful()) {
                     try {
                         JSONObject jsonObject = new JSONObject(response.body().string());
-                        if(!name.equals("何西阿·马修斯")){
+                        if((!name.equals("何西阿·马修斯"))&&(!name.equals("迈卡·贝尔"))){
                             jsonAdapter.return_array = jsonObject.getJSONArray("choices");
                             JSONObject jsonTokens = jsonObject.getJSONObject("usage");
                             int total_tokens = jsonTokens.getInt("total_tokens");
@@ -304,7 +374,7 @@ public class TalkingActivity extends BasicActivity {
                             }
 
                         }
-                        else{
+                        else if(name.equals("何西阿·马修斯")){
                             jsonAdapter.return_array = jsonObject.getJSONArray("data");
                             String result = jsonAdapter.get_result();//text
                             addResponse(result);
@@ -330,9 +400,24 @@ public class TalkingActivity extends BasicActivity {
                                 }
                             }.start();
                         }
+                        else
+                        {
+                            jsonAdapter.return_array = jsonObject.getJSONArray("text");
+                            String result = jsonAdapter.get_result();//text
+                            addResponse(result);
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+
+                    MsgInfo msgInfo = new MsgInfo(name,question,sex,0,chara_photo,true);
+                    msgRevDao.add(msgInfo);
+                    try {
+                        msgInfo = new MsgInfo(name,jsonAdapter.get_result(),sex,0,chara_photo,false);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    msgRevDao.add(msgInfo);
                 } else {
                     addResponse("返回内容失败，原因是"+ response.body());
                     //addResponse(getString(R.string.failed_load_response) + response.body().toString());
@@ -353,7 +438,63 @@ public class TalkingActivity extends BasicActivity {
                     addimgToChat(drawable, false);
                     break;
                 case 2:
-                    adapter.textView_temp.setText("图片返回失败！");
+            }
+        }
+    }
+    private void setupMediaRecorder() {
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        recorder.setOutputFile(fileName);
+    }
+
+    private void startRecording() {
+        try {
+            recorder.prepare();
+            recorder.start();
+            isRecording = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopRecording() {
+        if (isRecording) {
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+            isRecording = false;
+            Toast.makeText(this, "Recording saved to " + fileName, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                setupMediaRecorder();
+            } else {
+                Toast.makeText(this, "Permission Denied!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    private void write_permission()
+    {
+        if (Build.VERSION.SDK_INT >= 23) {
+            int REQUEST_CODE_CONTACT = 101;
+            String[] permissions = {
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            //验证是否许可权限
+            for (String str : permissions) {
+                if (TalkingActivity.this.checkSelfPermission(str) != PackageManager.PERMISSION_GRANTED) {
+                    //申请权限
+                    TalkingActivity.this.requestPermissions(permissions, REQUEST_CODE_CONTACT);
+                    return;
+                } else {
+                    //这里就是权限打开之后自己要操作的逻辑
+                }
             }
         }
     }
