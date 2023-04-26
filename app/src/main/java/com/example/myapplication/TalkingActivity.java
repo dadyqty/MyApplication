@@ -13,26 +13,35 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.XmlResourceParser;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -55,20 +64,25 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 public class TalkingActivity extends BasicActivity {
-    private MsgRevDao msgRevDao;
+        private MsgRevDao msgRevDao;
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
     private String apiKey;
@@ -85,6 +99,30 @@ public class TalkingActivity extends BasicActivity {
         Toast.makeText(getApplicationContext(), "复制成功", Toast.LENGTH_SHORT).show();
         return false;
     };
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+            menu.add(0, 1, 0, "保存到相册");
+            menu.add(0, 2, 0, "取消");
+        }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case 1:
+                if(saveImage29(ChatAdapter.bitmap))
+                    Toast.makeText(this,"保存成功",Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(this,"保存失败",Toast.LENGTH_SHORT).show();
+                break;
+            case 2:
+                Toast.makeText(this,"取消",Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+        return super.onContextItemSelected(item);
+    }
     private List<Message> messages = new ArrayList<>();
     private Session mySession;
     private RecyclerView recyclerView;
@@ -110,13 +148,7 @@ public class TalkingActivity extends BasicActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talking);
         write_permission();
-        if(Self_layout.api_changed)
-        {
-            SaveString(Self_layout.apikey);
-            Self_layout.api_changed =false;
-            System.out.println(Self_layout.apikey);
-        }
-        apiKey = Load_String();
+        apiKey = Load_String(UrlApiKey);
         if(apiKey.length()==0)
         {
             dialog = new AlertDialog.Builder(TalkingActivity.this);
@@ -124,7 +156,7 @@ public class TalkingActivity extends BasicActivity {
             dialog.setTitle("请设置您的apikey");
             View view1 = LayoutInflater.from(TalkingActivity.this).inflate(R.layout.option, null);
             dialog.setView(view1);
-            EditText editText = (EditText)view1.findViewById(R.id.apikey);
+            EditText editText = (EditText)view1.findViewById(R.id.set_apikey);
             dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
@@ -136,15 +168,13 @@ public class TalkingActivity extends BasicActivity {
                     }
                     else
                     {
-                        SaveString(apiKey);
-                        Self_layout.api_changed =false;
+                        SaveString(apiKey,BasicActivity.UrlApiKey);
                     }
                 }
             });
             dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    Self_layout.api_changed = false;
                     Toast.makeText(TalkingActivity.this,"必须设置apikey才能聊天",Toast.LENGTH_SHORT).show();
                     finish();
                 }
@@ -178,7 +208,9 @@ public class TalkingActivity extends BasicActivity {
         recyclerView = findViewById(R.id.chat_recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
-        adapter = new ChatAdapter(messages,sex,name,chara_photo,this.getResources());
+        adapter = new ChatAdapter(messages,sex,name,chara_photo,lc,this.getResources());
+        adapter.userphoto = Load_String(UrlUserPhoto);
+        adapter.activity = this;
         adapter.button_send = findViewById(R.id.send_button);
         fileName = "data/data/com.example.myapplication/";
         fileName += "recorded_audio.mp3";
@@ -224,7 +256,6 @@ public class TalkingActivity extends BasicActivity {
             }
         });}
         recyclerView.setAdapter(adapter);
-
         Button send_button = (Button) findViewById(R.id.send_button);
         send_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -263,6 +294,12 @@ public class TalkingActivity extends BasicActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        adapter.userphotobitmap = adapter.stringToBitmap(adapter.userphoto);
     }
 
     public static void hideSoftInput(Context context, View view) {
@@ -305,12 +342,12 @@ public class TalkingActivity extends BasicActivity {
         });
     }
 
-    void addimgToChat(Drawable drawable, Boolean sentByme) {
+    void addimgToChat(Bitmap bitmap, Boolean sentByme) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Message message = new Message(question, sentByme,true);
-                message.setDrawable(drawable);
+                message.setBitmap(bitmap);
                 messages.add(message);
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messages.size()-1);
@@ -341,11 +378,12 @@ public class TalkingActivity extends BasicActivity {
             e.printStackTrace();
         }
         RequestBody body = RequestBody.create(jsonAdapter.jsonBody.toString(), JSON);
-        Request request = new Request.Builder()
-                .url(jsonAdapter.url)///chat
-                .header("Authorization", "Bearer " + apiKey)
-                .post(body)
-                .build();
+        Request request;
+            request = new Request.Builder()
+                    .url(jsonAdapter.url)///chat
+                    .header("Authorization", "Bearer " + apiKey)
+                    .post(body)
+                    .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -433,9 +471,8 @@ public class TalkingActivity extends BasicActivity {
         public void handleMessage(android.os.Message msg) {
             switch (msg.what){
                 case 1:
-                    Drawable drawable = new BitmapDrawable(getResources(),bitmap);
                     messages.remove(messages.size() - 1);
-                    addimgToChat(drawable, false);
+                    addimgToChat(bitmap, false);
                     break;
                 case 2:
             }
@@ -497,5 +534,27 @@ public class TalkingActivity extends BasicActivity {
                 }
             }
         }
+    }
+
+    /**
+     * API29 中的最新保存图片到相册的方法
+     */
+    private boolean saveImage29(Bitmap toBitmap) {
+        //开始一个新的进程执行保存图片的操作
+        Uri insertUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
+        //使用use可以自动关闭流
+        try {
+            OutputStream outputStream = getContentResolver().openOutputStream(insertUri, "rw");
+            if (toBitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream)) {
+                Log.e("保存成功", "success");
+                return true;
+            } else {
+                Log.e("保存失败", "fail");
+                return false;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

@@ -7,7 +7,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -26,12 +30,6 @@ public class MainActivity3 extends BasicActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.third_layout);
-        if(Self_layout.api_changed)
-        {
-            SaveString(Self_layout.apikey);
-            Self_layout.api_changed =false;
-            System.out.println(Self_layout.apikey);
-        }
 /*        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
         {
@@ -54,12 +52,6 @@ public class MainActivity3 extends BasicActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if(Self_layout.api_changed)
-        {
-            SaveString(Self_layout.apikey);
-            Self_layout.api_changed =false;
-            System.out.println(Self_layout.apikey);
-        }
     }
 
     /*    @Override

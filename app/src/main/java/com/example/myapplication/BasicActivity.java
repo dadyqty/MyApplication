@@ -28,8 +28,12 @@ import java.io.OutputStreamWriter;
 
 public class BasicActivity extends AppCompatActivity{
 
+    public static int UrlApiKey = 0;
+    public static int UrlUserPhoto = 1;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Activity_contorller.add_activities(this);
         super.onCreate(savedInstanceState);
     }
 
@@ -38,6 +42,7 @@ public class BasicActivity extends AppCompatActivity{
         super.onDestroy();
         Activity_contorller.remove_activities(this);
     }
+
 
     @Override
     protected void onStart() {
@@ -65,12 +70,17 @@ public class BasicActivity extends AppCompatActivity{
         }
         return true;
     }
-    public void SaveString(String data){
+    public void SaveString(String data,int type){
         FileOutputStream fileOutputStream;
         BufferedWriter bufferedWriter = null;
 
         try {
-            fileOutputStream = openFileOutput("apikey",Context.MODE_PRIVATE);
+            if(type == UrlApiKey)//apikey
+                fileOutputStream = openFileOutput("apikey",Context.MODE_PRIVATE);
+            else if(type == UrlUserPhoto)//头像
+                fileOutputStream = openFileOutput("userphoto",Context.MODE_PRIVATE);
+            else
+                fileOutputStream = null;
             bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
             bufferedWriter.write(data);
         } catch (IOException e) {
@@ -85,13 +95,18 @@ public class BasicActivity extends AppCompatActivity{
         }
     }
 
-    public String Load_String(){
+    public String Load_String(int type){
         FileInputStream inputStream = null;
         BufferedReader bufferedReader = null;
         StringBuilder context = new StringBuilder();
 
         try {
-            inputStream = openFileInput("apikey");
+            if(type == UrlApiKey)
+                inputStream = openFileInput("apikey");
+            else if(type == UrlUserPhoto)
+                inputStream = openFileInput("userphoto");
+            else
+                inputStream = null;
             bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             String line = "";
             while((line = bufferedReader.readLine())!=null)

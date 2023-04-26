@@ -4,16 +4,25 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/drawable/ic_launcher_background.xml" value="0.3125" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/activity_about.xml" value="0.15885416666666666" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/activity_budget.xml" value="0.14427083333333332" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/activity_main.xml" value="0.14322916666666666" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/activity_setting.xml" value="0.15885416666666666" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/activity_talking.xml" value="0.25364583333333335" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/activity_usehelp.xml" value="0.15885416666666666" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/activity_user.xml" value="0.1" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/chara_item.xml" value="0.3645833333333333" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/chat_item.xml" value="0.1" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/fragment_blank.xml" value="0.15885416666666666" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/fragment_settings.xml" value="0.1578125" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/introduction_layout.xml" value="0.35294117647058826" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/main_layout.xml" value="0.33" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/option.xml" value="0.2526041666666667" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/pop_up_signup.xml" value="0.20726495726495728" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/received_message_layout.xml" value="0.1" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/second.xml" value="0.11752136752136752" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/second_layout.xml" value="0.25" />
+        <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/self_imformation.xml" value="0.25364583333333335" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/sent_message_layout.xml" value="0.1" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/third_layout.xml" value="0.264" />
         <entry key="..\:/Users/qty/AndroidStudioProjects/MyApplication2/app/src/main/res/layout/title.xml" value="0.3645833333333333" />

@@ -53,6 +53,7 @@ public class chara_adapter extends RecyclerView.Adapter<chara_adapter.View_holde
                 Intent it1 = new Intent(view.getContext(),MainActivity4.class);
                 it1.putExtra("name",insidelist.get(position).getName());
                 it1.putExtra("introduction",insidelist.get(position).getIntroduction());
+                it1.putExtra("Image_id",insidelist.get(position).getImage_id());
                 view.getContext().startActivity(it1);
             }
         });

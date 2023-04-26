@@ -79,12 +79,6 @@ public class MainActivity2 extends BasicActivity implements View.OnClickListener
         Intent it2 = new Intent();
         it2.putExtra("two2one","好不容易进去，回来干什么!");
         setResult(RESULT_OK,it2);
-        if(Self_layout.api_changed)
-        {
-            SaveString(Self_layout.apikey);
-            Self_layout.api_changed =false;
-            System.out.println(Self_layout.apikey);
-        }
         finish();
     }
 

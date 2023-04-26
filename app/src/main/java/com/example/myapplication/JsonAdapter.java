@@ -60,6 +60,8 @@ public class JsonAdapter {
                 jsonBody.put("model", "whisper-1");
                 url = "https://api.openai.com/v1/audio/translations";
                 break;
+            case ("查尔斯·史密斯"):
+                url = "https://api.openai.com/dashboard/billing/credit_grants";
             default:
                 jsonBody.put("model", "gpt-3.5-turbo");//text-davinci-003 gpt-3.5-turbo
                 jsonBody.put("messages", newQuestion);

@@ -6,8 +6,13 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.text.InputType;
 import android.util.AttributeSet;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -24,9 +29,6 @@ import java.io.FileOutputStream;
 
 public class Self_layout extends LinearLayout {
 
-    public static EditText editText;
-    public static String apikey;
-    public static Boolean api_changed = false;
     public Self_layout(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         LayoutInflater.from(context).inflate(R.layout.title,this);
@@ -64,38 +66,10 @@ public class Self_layout extends LinearLayout {
         bt2.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-                dialog.setIcon(R.drawable.option);
-                dialog.setTitle("Option");
-                View view1 = LayoutInflater.from(context).inflate(R.layout.option, null);
-                dialog.setView(view1);
-                editText = (EditText)view1.findViewById(R.id.apikey);
-                dialog.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        apikey =  editText.getText().toString();
-                        if(apikey.length()==0)
-                        {
-                            Toast.makeText(context,"apikey不能为空",Toast.LENGTH_SHORT).show();
-                        }
-                        else
-                        {
-                            api_changed = true;
-                            Toast.makeText(context,"apikey设置成功！",Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        api_changed = false;
-                        Toast.makeText(context, "Canceled!", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                dialog.show();
+                Intent intent = new Intent(view.getContext(),UserActivity.class);
+                view.getContext().startActivity(intent);
             }
         });
     }
-
 }
 

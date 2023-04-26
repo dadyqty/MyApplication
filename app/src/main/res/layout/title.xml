@@ -32,6 +32,6 @@
         android:layout_width="10dp"
         android:layout_height="30dp"
         android:layout_weight="0.5"
-        android:background="@drawable/option"
+        android:background="@drawable/user"
         />
 </LinearLayout>
